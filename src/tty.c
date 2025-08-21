@@ -2603,7 +2603,10 @@ int tty_connect(void)
     /* Make sure we restore tty settings on exit */
     if (first)
     {
-        atexit(&tty_restore);
+        if (interactive_mode == true)
+        {
+            atexit(&tty_restore);
+        }
         first = false;
     }
 
