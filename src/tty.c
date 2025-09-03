@@ -2668,6 +2668,10 @@ int tty_connect(void)
     // Exit if piped input
     if (interactive_mode == false)
     {
+        printf("\nDEBUG\n");
+        pthread_join(thread, NULL);
+        tcdrain(device_fd);
+        //close(device_fd);
         exit(EXIT_SUCCESS);
     }
 
