@@ -2401,8 +2401,11 @@ void tty_wait_for_device(void)
 
 void tty_disconnect(void)
 {
+    printf("\nDEBUG 3\n");
+
     if (connected)
     {
+        printf("\nDEBUG 4\n");
         tio_printf("Disconnected");
         flock(device_fd, LOCK_UN);
         close(device_fd);
@@ -2415,7 +2418,19 @@ void tty_disconnect(void)
 
 void tty_restore(void)
 {
-    tcsetattr(device_fd, TCSANOW, &tio_old);
+    tcdrain(device_fd);
+    
+    int outq = 0;
+        for (int i = 0; i < 50; ++i) { // up to ~50 ms
+            printf("\nDEBUG ioctl loop started\n");
+            if (ioctl(device_fd, TIOCOUTQ, &outq) == 0 && outq == 0) break;
+            printf("\nSuka\n");
+            usleep(1000);
+        }
+
+    usleep(2000);
+    
+    tcsetattr(device_fd, TCSADRAIN, &tio_old);
 
     if (option.rs485)
     {
@@ -2423,8 +2438,11 @@ void tty_restore(void)
         rs485_mode_restore(device_fd);
     }
 
+    printf("\nDEBUG 2\n");
+
     if (connected)
     {
+        printf("\nDEBUG 2.1\n");
         tty_disconnect();
     }
 }
@@ -2668,9 +2686,9 @@ int tty_connect(void)
     // Exit if piped input
     if (interactive_mode == false)
     {
-        printf("\nDEBUG\n");
-        pthread_join(thread, NULL);
-        tcdrain(device_fd);
+        printf("\nDEBUG 1\n");
+        //pthread_join(thread, NULL);
+        //tcdrain(device_fd);
         //close(device_fd);
         exit(EXIT_SUCCESS);
     }
